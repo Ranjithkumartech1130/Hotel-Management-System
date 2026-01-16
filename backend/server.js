@@ -180,56 +180,38 @@ app.post('/api/admin/login', (req, res) => {
 });
 
 const sendOrderConfirmation = async (order) => {
-    if (!transporter) {
-        if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-            console.warn('⚠️ Email credentials missing.');
-            return;
+    const ports = [465, 587, 2525]; // Common SMTP ports to try
+    let lastError = null;
+
+    for (const port of ports) {
+        try {
+            const transporter = nodemailer.createTransport({
+                host: 'smtp.gmail.com',
+                port: port,
+                secure: port === 465,
+                auth: {
+                    user: process.env.EMAIL_USER,
+                    pass: process.env.EMAIL_PASS,
+                },
+                connectionTimeout: 5000
+            });
+
+            await transporter.sendMail({
+                from: `"BestBites Hotel" <${process.env.EMAIL_USER}>`,
+                to: order.email,
+                subject: `Order Confirmed - #${order.id.toString().slice(-6)}`,
+                html: `<h1>Order Confirmed!</h1><p>Hi ${order.firstName}, your order of ₹${order.totalCost} is being prepared.</p>`
+            });
+
+            console.log(`📨 Success: Email sent via port ${port}`);
+            return; // Success! Exit the function
+        } catch (error) {
+            lastError = error;
+            console.log(`⚠️ Port ${port} failed, trying next...`);
         }
-        transporter = nodemailer.createTransport({
-            host: 'smtp.gmail.com',
-            port: 465,
-            secure: true,
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS,
-            },
-            connectionTimeout: 15000
-        });
     }
 
-    try {
-        const itemsList = (order.cart || []).map(item =>
-            `<li><strong>${item.title}</strong> - ₹${item.price}</li>`
-        ).join('');
-
-        await transporter.sendMail({
-            from: `"BestBites" <${process.env.EMAIL_USER}>`,
-            to: order.email,
-            subject: `Order Confirmation - #${order.id.toString().slice(-6)}`,
-            html: `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
-                    <div style="background-color: #ffc107; padding: 20px; text-align: center; border-radius: 10px 10px 0 0;">
-                        <h1 style="margin: 0; color: white;">Order Confirmed!</h1>
-                    </div>
-                    <div style="padding: 20px; border: 1px solid #ddd; border-top: none; border-radius: 0 0 10px 10px;">
-                        <p>Hi <strong>${order.firstName}</strong>,</p>
-                        <p>Thank you for your order!</p>
-                        <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
-                            <h3 style="margin-top: 0; color: #ffc107;">Order Details</h3>
-                            <p><strong>Order ID:</strong> #${order.id}</p>
-                            <p><strong>Total:</strong> ₹${order.totalCost}</p>
-                        </div>
-                        <h3>Items:</h3>
-                        <ul>${itemsList}</ul>
-                        <p style="text-align: center; color: #777;">BestBites Hotel Management</p>
-                    </div>
-                </div>
-            `,
-        });
-        console.log('📨 Success: Confirmation email sent to', order.email);
-    } catch (error) {
-        console.error('❌ Email Error:', error.message);
-    }
+    console.error('❌ All email ports are BLOCKED by Render. Action required: Contact Render support to unblock SMTP.');
 };
 
 // Diagnostic Endpoint
