@@ -179,59 +179,34 @@ app.post('/api/admin/login', (req, res) => {
     res.status(401).json({ success: false, message: 'Invalid credentials' });
 });
 
-let transporter;
+const sendOrderConfirmation = async (order) => {
+    // Lazy initialize transporter if it doesn't exist
+    if (!transporter) {
+        if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+            console.warn('⚠️ Email credentials missing. Confirmation email skipped.');
+            return;
+        }
 
-const initEmailService = async () => {
-    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-        console.warn('⚠️ Email credentials missing. Email service will be disabled.');
-        return;
-    }
-
-    try {
         transporter = nodemailer.createTransport({
             host: 'smtp.gmail.com',
-            port: 465,
-            secure: true,
+            port: 587,
+            secure: false, // Use TLS
             auth: {
                 user: process.env.EMAIL_USER,
                 pass: process.env.EMAIL_PASS,
             },
-            connectionTimeout: 10000, // 10 seconds timeout
-            greetingTimeout: 10000,
-            socketTimeout: 20000,
-            logger: true,
-            debug: true, // Enable debug for more info in Render logs
             tls: {
                 rejectUnauthorized: false
             }
         });
-
-        // Test the connection without blocking the main thread
-        transporter.verify((error, success) => {
-            if (error) {
-                console.error('❌ Email Service Error:', error.message);
-                if (error.code === 'ETIMEDOUT') {
-                    console.error('   Tip: This usually means the cloud provider is blocking the connection or Gmail is rejecting the request.');
-                }
-            } else {
-                console.log('✅ Email Service Connected (smtp.gmail.com:465)');
-            }
-        });
-    } catch (error) {
-        console.error('Failed to initialize email service:', error);
     }
-};
-initEmailService();
-
-const sendOrderConfirmation = async (order) => {
-    if (!transporter) return;
 
     try {
         const itemsList = (order.cart || []).map(item =>
             `<li><strong>${item.title}</strong> - ₹${item.price}</li>`
         ).join('');
 
-        const info = await transporter.sendMail({
+        await transporter.sendMail({
             from: `"BestBites" <${process.env.EMAIL_USER}>`,
             to: order.email,
             subject: `Order Confirmation - #${order.id.toString().slice(-6)}`,
@@ -243,38 +218,30 @@ const sendOrderConfirmation = async (order) => {
                     <div style="padding: 20px; border: 1px solid #ddd; border-top: none; border-radius: 0 0 10px 10px;">
                         <p>Hi <strong>${order.firstName}</strong>,</p>
                         <p>Thank you for your order! We've received it and are getting it ready.</p>
-                        
                         <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
                             <h3 style="margin-top: 0; color: #ffc107;">Order Details</h3>
                             <p><strong>Order ID:</strong> #${order.id}</p>
                             <p><strong>Date:</strong> ${new Date(order.date).toLocaleString()}</p>
                             <p><strong>Address:</strong> ${order.address}</p>
                         </div>
-
                         <h3>Items Ordered:</h3>
-                        <ul>
-                            ${itemsList}
-                        </ul>
-                        
+                        <ul>${itemsList}</ul>
                         <div style="text-align: right; margin-top: 20px;">
                             <h2>Total Amount: ₹${order.totalCost}</h2>
                         </div>
-
                         <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
-                        
-                        <p style="font-size: 12px; color: #777; text-align: center;">
-                            If you have any questions, please contact our support.<br>
-                            BestBites Food Delivery
-                        </p>
+                        <p style="font-size: 12px; color: #777; text-align: center;">BestBites Food Delivery</p>
                     </div>
                 </div>
             `,
         });
-
         console.log('📨 Order Confirmation Email Sent!');
-        console.log('🔗 Preview URL: %s', nodemailer.getTestMessageUrl(info));
     } catch (error) {
-        console.error('Error sending email:', error);
+        if (error.code === 'ETIMEDOUT') {
+            console.error('❌ Email Timeout: Render is blocking port 587. Please contact Render support to unblock SMTP.');
+        } else {
+            console.error('❌ Error sending email:', error.message);
+        }
     }
 };
 
