@@ -182,6 +182,11 @@ app.post('/api/admin/login', (req, res) => {
 let transporter;
 
 const initEmailService = async () => {
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+        console.warn('⚠️ Email credentials missing. Email service will be disabled.');
+        return;
+    }
+
     try {
         transporter = nodemailer.createTransport({
             host: 'smtp.gmail.com',
@@ -191,14 +196,27 @@ const initEmailService = async () => {
                 user: process.env.EMAIL_USER,
                 pass: process.env.EMAIL_PASS,
             },
+            connectionTimeout: 10000, // 10 seconds timeout
+            greetingTimeout: 10000,
+            socketTimeout: 20000,
             logger: true,
+            debug: true, // Enable debug for more info in Render logs
             tls: {
                 rejectUnauthorized: false
             }
         });
 
-        await transporter.verify();
-        console.log('✅ Email Service Connected (smtp.gmail.com:465)');
+        // Test the connection without blocking the main thread
+        transporter.verify((error, success) => {
+            if (error) {
+                console.error('❌ Email Service Error:', error.message);
+                if (error.code === 'ETIMEDOUT') {
+                    console.error('   Tip: This usually means the cloud provider is blocking the connection or Gmail is rejecting the request.');
+                }
+            } else {
+                console.log('✅ Email Service Connected (smtp.gmail.com:465)');
+            }
+        });
     } catch (error) {
         console.error('Failed to initialize email service:', error);
     }
