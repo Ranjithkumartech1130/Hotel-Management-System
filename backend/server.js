@@ -180,10 +180,15 @@ app.post('/api/admin/login', (req, res) => {
 });
 
 const sendOrderConfirmation = async (order) => {
-    const scriptUrl = process.env.GOOGLE_SCRIPT_URL;
+    let scriptUrl = (process.env.GOOGLE_SCRIPT_URL || '').trim();
 
     if (!scriptUrl) {
-        console.warn('⚠️ [EMAIL] GOOGLE_SCRIPT_URL is missing. Navigation to Render -> Environment to add it.');
+        console.warn('⚠️ [EMAIL] GOOGLE_SCRIPT_URL is missing in Render environment variables.');
+        return;
+    }
+
+    if (!scriptUrl.includes('/macros/s/') || !scriptUrl.endsWith('/exec')) {
+        console.error('❌ [EMAIL] INVALID URL: Your GOOGLE_SCRIPT_URL must start with "/macros/s/" and end with "/exec". Check the README or instructions again.');
         return;
     }
 
@@ -223,9 +228,13 @@ const sendOrderConfirmation = async (order) => {
         const resultText = await response.text();
 
         if (response.ok) {
-            console.log(`✅ [EMAIL] Success: Google Script responded with: ${resultText}`);
+            if (resultText.includes('google-drive-error') || resultText.includes('Page Not Found')) {
+                console.error('❌ [EMAIL] ERROR: Your Google Script URL is pointing to a Google Drive error page. Ensure you selected "Anyone" in the "Who has access" setting when deploying.');
+            } else {
+                console.log(`✅ [EMAIL] Success: Google Script responded.`);
+            }
         } else {
-            console.error(`❌ [EMAIL] Google Script Error (Status ${response.status}): ${resultText}`);
+            console.error(`❌ [EMAIL] Google Script HTTP Error (${response.status})`);
         }
     } catch (error) {
         console.error(`❌ [EMAIL] Critical Failure calling Google Script:`, error.message);
