@@ -72,7 +72,20 @@ Follow these steps to deploy this system to [Render](https://render.com/):
 | `ADMIN_PASSWORD` | `pooja123` (or your choice) |
 | `EMAIL_USER` | `poojaselvaraj019@gmail.com` |
 | `EMAIL_PASS` | Your 16-character Google App Password |
+| `BREVO_API_KEY` | (Recommended) [Get a free key here](https://www.brevo.com/) to bypass Render blocks |
 | `PORT` | `10000` (Render's default) |
+
+---
+
+## 📧 Fixing Email Timeouts on Render
+
+If your emails are not sending and you see "Connection Timeout" in the Render logs, it is because Render blocks SMTP ports. 
+
+**Recommended Solution**:
+1. Sign up for a free account at [Brevo (Sendinblue)](https://www.brevo.com/).
+2. Go to **SMTP & API** settings and create a new **API Key**.
+3. Add `BREVO_API_KEY` to your Render **Environment Variables**.
+4. The system will automatically use the API instead of SMTP, which is **never blocked**.
 
 ### 3. Frontend Sync
 The app automatically detects the Render environment and connects to the correct API URL.

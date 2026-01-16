@@ -180,38 +180,62 @@ app.post('/api/admin/login', (req, res) => {
 });
 
 const sendOrderConfirmation = async (order) => {
-    const ports = [465, 587, 2525]; // Common SMTP ports to try
-    let lastError = null;
-
-    for (const port of ports) {
+    // 1. Try Brevo API (Bypasses Render's SMTP Block)
+    if (process.env.BREVO_API_KEY) {
         try {
-            const transporter = nodemailer.createTransport({
-                host: 'smtp.gmail.com',
-                port: port,
-                secure: port === 465,
-                auth: {
-                    user: process.env.EMAIL_USER,
-                    pass: process.env.EMAIL_PASS,
+            const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+                method: 'POST',
+                headers: {
+                    'accept': 'application/json',
+                    'api-key': process.env.BREVO_API_KEY,
+                    'content-type': 'application/json'
                 },
-                connectionTimeout: 5000
+                body: JSON.stringify({
+                    sender: { name: "BestBites Hotel", email: process.env.EMAIL_USER },
+                    to: [{ email: order.email, name: order.firstName }],
+                    subject: `Order Confirmed - #${order.id.toString().slice(-6)}`,
+                    htmlContent: `
+                        <div style="font-family: Arial; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+                            <h1 style="color: #ffc107;">Order Confirmed!</h1>
+                            <p>Hi <b>${order.firstName}</b>, we've received your order of <b>₹${order.totalCost}</b>.</p>
+                            <p>Our team is preparing it now!</p>
+                            <hr>
+                            <p style="font-size: 12px; color: #777;">BestBites Hotel & Management System</p>
+                        </div>`
+                })
             });
 
-            await transporter.sendMail({
-                from: `"BestBites Hotel" <${process.env.EMAIL_USER}>`,
-                to: order.email,
-                subject: `Order Confirmed - #${order.id.toString().slice(-6)}`,
-                html: `<h1>Order Confirmed!</h1><p>Hi ${order.firstName}, your order of ₹${order.totalCost} is being prepared.</p>`
-            });
-
-            console.log(`📨 Success: Email sent via port ${port}`);
-            return; // Success! Exit the function
-        } catch (error) {
-            lastError = error;
-            console.log(`⚠️ Port ${port} failed, trying next...`);
+            if (response.ok) {
+                console.log('✅ Success: Email sent via Brevo API');
+                return;
+            }
+        } catch (apiError) {
+            console.error('⚠️ Brevo API failed, trying SMTP...');
         }
     }
 
-    console.error('❌ All email ports are BLOCKED by Render. Action required: Contact Render support to unblock SMTP.');
+    // 2. SMTP Fallback
+    const transporter = nodemailer.createTransport({
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true,
+        auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS,
+        }
+    });
+
+    try {
+        await transporter.sendMail({
+            from: `"BestBites Hotel" <${process.env.EMAIL_USER}>`,
+            to: order.email,
+            subject: `Order Confirmation - #${order.id.toString().slice(-6)}`,
+            text: `Hi ${order.firstName}, your order of ₹${order.totalCost} is confirmed!`
+        });
+        console.log('📨 Success: Email sent via SMTP');
+    } catch (error) {
+        console.error('❌ Email Failed: Render is blocking all outgoing SMTP. Please use BREVO_API_KEY.');
+    }
 };
 
 // Diagnostic Endpoint
