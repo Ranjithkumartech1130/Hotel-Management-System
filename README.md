@@ -1,16 +1,20 @@
-# 🍔 BestBites - Food Ordering System
+# 🏨 Hotel Management System (BestBites)
 
-BestBites is a modern, responsive food ordering web application featuring a stunning frontend and a robust Node.js backend with an integrated Admin Dashboard.
+A comprehensive Hotel and Food Management System with real-time table booking, food ordering, and an advanced admin dashboard.
 
 ## 🚀 Features
 
 -   **Stunning UI/UX**: Premium design with smooth animations and responsive layout.
+-   **Table Management**: Real-time table status tracking (Available/Occupied).
 -   **Food Menu**: Wide variety of food items with category filtering (Burger, Pizza, Sweets, etc.).
 -   **Shopping Cart**: Dynamic cart management using local storage.
 -   **Checkout System**: Secure billing and order placement.
+-   **Email Confirmations**: Automated order confirmation emails to customers.
 -   **Admin Dashboard**:
     -   Secure JWT-based Login.
-    -   Real-time order tracking.
+    -   Real-time order tracking and management.
+    -   Table status control.
+    -   Menu item availability toggle.
     -   CSV Export of orders for business analysis.
 
 ---
