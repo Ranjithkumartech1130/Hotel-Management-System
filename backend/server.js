@@ -180,24 +180,20 @@ app.post('/api/admin/login', (req, res) => {
 });
 
 const sendOrderConfirmation = async (order) => {
-    // Lazy initialize transporter if it doesn't exist
     if (!transporter) {
         if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-            console.warn('⚠️ Email credentials missing. Confirmation email skipped.');
+            console.warn('⚠️ Email credentials missing.');
             return;
         }
-
         transporter = nodemailer.createTransport({
             host: 'smtp.gmail.com',
-            port: 587,
-            secure: false, // Use TLS
+            port: 465,
+            secure: true,
             auth: {
                 user: process.env.EMAIL_USER,
                 pass: process.env.EMAIL_PASS,
             },
-            tls: {
-                rejectUnauthorized: false
-            }
+            connectionTimeout: 15000
         });
     }
 
@@ -217,33 +213,42 @@ const sendOrderConfirmation = async (order) => {
                     </div>
                     <div style="padding: 20px; border: 1px solid #ddd; border-top: none; border-radius: 0 0 10px 10px;">
                         <p>Hi <strong>${order.firstName}</strong>,</p>
-                        <p>Thank you for your order! We've received it and are getting it ready.</p>
+                        <p>Thank you for your order!</p>
                         <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
                             <h3 style="margin-top: 0; color: #ffc107;">Order Details</h3>
                             <p><strong>Order ID:</strong> #${order.id}</p>
-                            <p><strong>Date:</strong> ${new Date(order.date).toLocaleString()}</p>
-                            <p><strong>Address:</strong> ${order.address}</p>
+                            <p><strong>Total:</strong> ₹${order.totalCost}</p>
                         </div>
-                        <h3>Items Ordered:</h3>
+                        <h3>Items:</h3>
                         <ul>${itemsList}</ul>
-                        <div style="text-align: right; margin-top: 20px;">
-                            <h2>Total Amount: ₹${order.totalCost}</h2>
-                        </div>
-                        <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
-                        <p style="font-size: 12px; color: #777; text-align: center;">BestBites Food Delivery</p>
+                        <p style="text-align: center; color: #777;">BestBites Hotel Management</p>
                     </div>
                 </div>
             `,
         });
-        console.log('📨 Order Confirmation Email Sent!');
+        console.log('📨 Success: Confirmation email sent to', order.email);
     } catch (error) {
-        if (error.code === 'ETIMEDOUT') {
-            console.error('❌ Email Timeout: Render is blocking port 587. Please contact Render support to unblock SMTP.');
-        } else {
-            console.error('❌ Error sending email:', error.message);
-        }
+        console.error('❌ Email Error:', error.message);
     }
 };
+
+// Diagnostic Endpoint
+app.post('/api/admin/test-email', verifyToken, async (req, res) => {
+    try {
+        const testOrder = {
+            id: 'TEST123456',
+            firstName: 'Pooja',
+            email: process.env.EMAIL_USER,
+            totalCost: 0,
+            cart: [{ title: 'Test Item', price: 0 }],
+            date: new Date()
+        };
+        await sendOrderConfirmation(testOrder);
+        res.json({ success: true, message: 'Test email attempt completed. Check server logs for results.' });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
 
 app.post('/api/orders', async (req, res) => {
     try {
