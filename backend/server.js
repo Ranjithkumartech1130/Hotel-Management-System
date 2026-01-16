@@ -180,61 +180,45 @@ app.post('/api/admin/login', (req, res) => {
 });
 
 const sendOrderConfirmation = async (order) => {
-    // 1. Try Brevo API (Bypasses Render's SMTP Block)
-    if (process.env.BREVO_API_KEY) {
-        try {
-            const response = await fetch('https://api.brevo.com/v3/smtp/email', {
-                method: 'POST',
-                headers: {
-                    'accept': 'application/json',
-                    'api-key': process.env.BREVO_API_KEY,
-                    'content-type': 'application/json'
-                },
-                body: JSON.stringify({
-                    sender: { name: "BestBites Hotel", email: process.env.EMAIL_USER },
-                    to: [{ email: order.email, name: order.firstName }],
-                    subject: `Order Confirmed - #${order.id.toString().slice(-6)}`,
-                    htmlContent: `
-                        <div style="font-family: Arial; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
-                            <h1 style="color: #ffc107;">Order Confirmed!</h1>
-                            <p>Hi <b>${order.firstName}</b>, we've received your order of <b>₹${order.totalCost}</b>.</p>
-                            <p>Our team is preparing it now!</p>
-                            <hr>
-                            <p style="font-size: 12px; color: #777;">BestBites Hotel & Management System</p>
-                        </div>`
-                })
-            });
+    // This is the "Easy Method" - Use Google Apps Script to bypass Render blocks
+    const scriptUrl = process.env.GOOGLE_SCRIPT_URL;
 
-            if (response.ok) {
-                console.log('✅ Success: Email sent via Brevo API');
-                return;
-            }
-        } catch (apiError) {
-            console.error('⚠️ Brevo API failed, trying SMTP...');
-        }
+    if (!scriptUrl) {
+        console.warn('⚠️ GOOGLE_SCRIPT_URL is missing. Email skipped. Add the URL to Render Environment.');
+        return;
     }
 
-    // 2. SMTP Fallback
-    const transporter = nodemailer.createTransport({
-        host: 'smtp.gmail.com',
-        port: 465,
-        secure: true,
-        auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASS,
-        }
-    });
-
     try {
-        await transporter.sendMail({
-            from: `"BestBites Hotel" <${process.env.EMAIL_USER}>`,
-            to: order.email,
-            subject: `Order Confirmation - #${order.id.toString().slice(-6)}`,
-            text: `Hi ${order.firstName}, your order of ₹${order.totalCost} is confirmed!`
+        const itemsList = (order.cart || []).map(item =>
+            `<li><strong>${item.title}</strong> - ₹${item.price}</li>`
+        ).join('');
+
+        const htmlBody = `
+            <div style="font-family: Arial; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+                <h1 style="color: #ffc107;">Order Confirmed!</h1>
+                <p>Hi <b>${order.firstName}</b>, we've received your order of <b>₹${order.totalCost}</b>.</p>
+                <p>Our team is preparing it now!</p>
+                <ul>${itemsList}</ul>
+                <hr>
+                <p style="font-size: 12px; color: #777;">BestBites Hotel & Management System</p>
+            </div>`;
+
+        const response = await fetch(scriptUrl, {
+            method: 'POST',
+            body: JSON.stringify({
+                to: order.email,
+                subject: `Order Confirmed - #${order.id.toString().slice(-6)}`,
+                html: htmlBody
+            })
         });
-        console.log('📨 Success: Email sent via SMTP');
+
+        if (response.ok) {
+            console.log('✅ Success: Email sent via Google Script API');
+        } else {
+            console.error('❌ Google Script error:', await response.text());
+        }
     } catch (error) {
-        console.error('❌ Email Failed: Render is blocking all outgoing SMTP. Please use BREVO_API_KEY.');
+        console.error('❌ Email Failed:', error.message);
     }
 };
 
@@ -250,7 +234,7 @@ app.post('/api/admin/test-email', verifyToken, async (req, res) => {
             date: new Date()
         };
         await sendOrderConfirmation(testOrder);
-        res.json({ success: true, message: 'Test email attempt completed. Check server logs for results.' });
+        res.json({ success: true, message: 'Check server logs for "Success: Email sent via Google Script"' });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
