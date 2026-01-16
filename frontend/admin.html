@@ -180,6 +180,11 @@
                     data-bs-target="#table-mgmt" type="button" role="tab" onclick="loadTables()">Table
                     Management</button>
             </li>
+            <li class="nav-item" role="presentation">
+                <button class="btn btn-outline-warning px-4 rounded-pill" id="health-tab" data-bs-toggle="tab"
+                    data-bs-target="#system-health" type="button" role="tab" onclick="checkHealth()">System
+                    Health</button>
+            </li>
         </ul>
 
         <div class="tab-content" id="adminTabsContent">
@@ -219,11 +224,29 @@
                             class="badge bg-danger-subtle text-danger border border-danger-subtle mx-2">Occupied</span>
                     </div>
                     <div class="table-map rounded-3 bg-white" id="adminTableMap">
-                        <!-- Tables injected by JS -->
                         <div class="position-absolute bottom-0 start-0 p-2 bg-light border-top border-end rounded-top-end small fw-bold"
                             style="z-index: 5;">Entrance</div>
                         <div class="position-absolute top-0 end-0 p-2 bg-light border-bottom border-start rounded-bottom-start small fw-bold"
                             style="z-index: 5;">Restrooms</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Health Tab -->
+            <div class="tab-pane fade" id="system-health" role="tabpanel">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                            <h4 class="fw-bold mb-3"><i class="bi bi-envelope-at text-warning"></i> Email Configuration
+                            </h4>
+                            <div id="emailStatus" class="alert alert-info py-2">Checking configuration...</div>
+                            <p class="small text-muted mb-4">This checks if your <code>GOOGLE_SCRIPT_URL</code> is
+                                correctly set in Render.</p>
+                            <button onclick="testEmail()" class="btn btn-warning text-white fw-bold w-100">
+                                <i class="bi bi-send-check me-2"></i> Send Test Email
+                            </button>
+                            <div id="testResult" class="mt-3 small"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -596,6 +619,44 @@
                     }
                 });
             });
+            window.checkHealth = function () {
+                const $status = $('#emailStatus');
+                $status.html('<div class="spinner-border spinner-border-sm"></div> Checking...');
+
+                $.ajax({
+                    url: `${API_URL}/admin/health`,
+                    method: 'GET',
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` },
+                    success: function (data) {
+                        if (data.config.hasGoogleScript) {
+                            $status.removeClass('alert-info alert-danger').addClass('alert-success').html('<i class="bi bi-check-circle-fill me-2"></i> GOOGLE_SCRIPT_URL is configured!');
+                        } else {
+                            $status.removeClass('alert-info alert-success').addClass('alert-danger').html('<i class="bi bi-exclamation-triangle-fill me-2"></i> GOOGLE_SCRIPT_URL is MISSING!');
+                        }
+                    },
+                    error: function () {
+                        $status.addClass('alert-danger').text('Error connecting to server.');
+                    }
+                });
+            };
+
+            window.testEmail = function () {
+                const $btn = $('#system-health btn');
+                const $res = $('#testResult');
+                $res.html('📡 Sending request...');
+
+                $.ajax({
+                    url: `${API_URL}/admin/test-email`,
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` },
+                    success: function (data) {
+                        $res.html('<div class="alert alert-success mt-2">' + data.message + '</div>');
+                    },
+                    error: function (xhr) {
+                        $res.html('<div class="alert alert-danger mt-2">Error: ' + (xhr.responseJSON ? xhr.responseJSON.error : 'Unknown error') + '</div>');
+                    }
+                });
+            };
         });
     </script>
 </body>

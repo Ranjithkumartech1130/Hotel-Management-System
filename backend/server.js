@@ -180,13 +180,19 @@ app.post('/api/admin/login', (req, res) => {
 });
 
 const sendOrderConfirmation = async (order) => {
-    // This is the "Easy Method" - Use Google Apps Script to bypass Render blocks
     const scriptUrl = process.env.GOOGLE_SCRIPT_URL;
 
     if (!scriptUrl) {
-        console.warn('⚠️ GOOGLE_SCRIPT_URL is missing. Email skipped. Add the URL to Render Environment.');
+        console.warn('⚠️ [EMAIL] GOOGLE_SCRIPT_URL is missing. Navigation to Render -> Environment to add it.');
         return;
     }
+
+    if (!order.email || !order.email.includes('@')) {
+        console.warn(`⚠️ [EMAIL] Invalid or missing email for order #${order.id}. Skipping.`);
+        return;
+    }
+
+    console.log(`📡 [EMAIL] Attempting to send order #${order.id} to ${order.email}...`);
 
     try {
         const itemsList = (order.cart || []).map(item =>
@@ -205,6 +211,8 @@ const sendOrderConfirmation = async (order) => {
 
         const response = await fetch(scriptUrl, {
             method: 'POST',
+            redirect: 'follow',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify({
                 to: order.email,
                 subject: `Order Confirmed - #${order.id.toString().slice(-6)}`,
@@ -212,15 +220,30 @@ const sendOrderConfirmation = async (order) => {
             })
         });
 
+        const resultText = await response.text();
+
         if (response.ok) {
-            console.log('✅ Success: Email sent via Google Script API');
+            console.log(`✅ [EMAIL] Success: Google Script responded with: ${resultText}`);
         } else {
-            console.error('❌ Google Script error:', await response.text());
+            console.error(`❌ [EMAIL] Google Script Error (Status ${response.status}): ${resultText}`);
         }
     } catch (error) {
-        console.error('❌ Email Failed:', error.message);
+        console.error(`❌ [EMAIL] Critical Failure calling Google Script:`, error.message);
     }
 };
+
+// Health Check & Diagnostic Endpoint
+app.get('/api/admin/health', verifyToken, (req, res) => {
+    res.json({
+        status: 'ok',
+        config: {
+            hasGoogleScript: !!process.env.GOOGLE_SCRIPT_URL,
+            adminUser: process.env.ADMIN_USERNAME || 'admin',
+            emailUser: process.env.EMAIL_USER || 'Not set',
+            port: PORT
+        }
+    });
+});
 
 // Diagnostic Endpoint
 app.post('/api/admin/test-email', verifyToken, async (req, res) => {
