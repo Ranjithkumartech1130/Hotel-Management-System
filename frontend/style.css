@@ -1,97 +1,196 @@
-@import url('https://fonts.googleapis.com/css2?family=Lobster&family=Lobster+Two:ital,wght@0,400;0,700;1,400;1,700&family=Poppins:ital,wght@0,100;0,200;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
-
-
-*{
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-:root{
+:root {
     --bs-warning: #fe9f10;
-    --bs-font-sans-serif: Poppins, sans-serif !important;
+    --bs-font-sans-serif: 'Poppins', sans-serif !important;
     --bs-warning-rgb: 254, 159, 16;
-    --bs-link-hover-color-rgb: #fe9f10;
     --bs-light-rgb: 255, 248, 224;
+    --primary-color: #fe9f10;
+    --secondary-color: #2b2d42;
+    --accent-color: #ef233c;
+    --glass-bg: rgba(255, 255, 255, 0.8);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.btn-warning{
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: var(--bs-font-sans-serif);
+    color: var(--secondary-color);
+    overflow-x: hidden;
+}
+
+h1,
+h2,
+h3,
+.navbar-brand {
+    font-family: 'Lobster', cursive;
+}
+
+/* Glassmorphism Navbar */
+.navbar {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--glass-border);
+    transition: var(--transition);
+    padding: 1rem 0;
+}
+
+.navbar.scrolled {
+    padding: 0.5rem 0;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+}
+
+.nav-link {
+    position: relative;
+    font-weight: 500;
+    transition: var(--transition);
+}
+
+.nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 10px;
+    right: 10px;
+    height: 2px;
+    background: var(--primary-color);
+    transform: scaleX(0);
+    transition: var(--transition);
+}
+
+.nav-link:hover::after,
+.nav-link.active::after {
+    transform: scaleX(1);
+}
+
+/* Hero Section Enhancements */
+.hero-side {
+    z-index: 1;
+}
+
+.hero-side::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: url('assets/pattern.png');
+    opacity: 0.15;
+}
+
+/* Premium Card Styling */
+.card {
+    border: none;
+    border-radius: 20px;
+    transition: var(--transition);
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+}
+
+.card-img-top {
+    transition: var(--transition);
+}
+
+.card:hover .card-img-top {
+    transform: scale(1.1);
+}
+
+/* Button Enhancements */
+.btn-warning {
     --bs-btn-color: #fff;
     --bs-btn-bg: #fe9f10;
     --bs-btn-border-color: #fe9f10;
+    border-radius: 50px;
+    padding: 0.6rem 1.5rem;
+    font-weight: 600;
+    transition: var(--transition);
+}
 
-    --bs-btn-hover-color: #fe9f10;
-    --bs-btn-hover-bg: #fff;
-}
-.btn-outline-warning{
-    --bs-btn-hover-color:white;
-}
-.btn:hover i{
+.btn-warning:hover {
+    background: #fff;
     color: #fe9f10;
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(254, 159, 16, 0.3);
 }
 
-h1, h2{
-    font-family: 'Lobster';
+/* Reservation Form */
+#reserve {
+    border-radius: 30px;
 }
 
-.nav-link.active{
-    color: var(--bs-warning) !important;
-    font-weight: bold;
-}
-.hero-side::before{
-    content: '';
-    position: absolute;
-    width: 100%; height: 100%;
-    background: url('assets/pattern.png');
-    opacity: 0.25;
-}
-.nav-link:focus, .nav-link:hover{
-    color: var(--bs-warning);
-}
-
-
-.food-item.hide{
-    display: none;
-}
-
-.btn.active{
-    color: white;
-}
-
-
-.img-line{
-    width: 50%;
-    height: 1px;
-    margin: 0 15px;
-    border-bottom: 1px dashed #7D7D7D;
-}
-
-#reserve form input{
-    border: none;
-    background: transparent;
-    margin: 1rem 0rem;
+#reserve form input {
+    border: none !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(5px);
+    margin: 0.5rem 0;
     padding: 1rem;
-    color: white;
-    border-radius: 0;
-    border-bottom: 1px solid white;
-}
-#reserve form input::placeholder{
-    color: currentColor;
+    color: white !important;
+    border-radius: 10px !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    transition: var(--transition);
 }
 
-.icon{
+#reserve form input:focus {
+    background: rgba(255, 255, 255, 0.2) !important;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.15);
+}
+
+#reserve form input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-up {
+    animation: fadeInUp 0.8s ease forwards;
+}
+
+/* Stats Section */
+.icon {
     background: #fff8e2;
-}
-.icon img{
-    width: 100%;
+    transition: var(--transition);
 }
 
-.border-right{
+.col:hover .icon {
+    background: var(--primary-color);
+    transform: rotate(10deg);
+}
+
+.col:hover .icon img {
+    filter: brightness(0) invert(1);
+}
+
+.border-right {
     border-right: 1px dashed #ccc;
 }
 
 @media only screen and (max-width: 768px) {
-    html{
-        font-size: 50%;
+    .border-right {
+        border-right: none;
+        border-bottom: 1px dashed #ccc;
+        padding-bottom: 1rem;
+    }
+
+    .hero-side {
+        display: none;
     }
 }

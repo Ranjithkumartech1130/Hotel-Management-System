@@ -1,3 +1,7 @@
 node_modules/
 .env
 .DS_Store
+*.json
+!menu.json
+!tables.json
+!orders.json

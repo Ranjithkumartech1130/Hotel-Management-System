@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
@@ -12,10 +13,18 @@ const PORT = process.env.PORT || 5000;
 const DATA_FILE = path.join(__dirname, 'orders.json');
 const MENU_FILE = path.join(__dirname, 'menu.json');
 const TABLES_FILE = path.join(__dirname, 'tables.json');
-const SECRET_KEY = 'admin_secret_key';
+const SECRET_KEY = process.env.JWT_SECRET || 'admin_secret_key';
 
 app.use(cors());
 app.use(bodyParser.json());
+
+// Serve static files from the frontend directory
+app.use(express.static(path.join(__dirname, '../frontend')));
+
+// Fallback to index.html for any unknown routes (SPA support)
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/index.html'));
+});
 
 const verifyToken = (req, res, next) => {
     try {
@@ -160,7 +169,10 @@ app.delete('/api/admin/menu/:id', verifyToken, async (req, res) => {
 
 app.post('/api/admin/login', (req, res) => {
     const { username, password } = req.body;
-    if (username === 'admin' && password === 'admin123') {
+    const adminUser = process.env.ADMIN_USERNAME || 'admin';
+    const adminPass = process.env.ADMIN_PASSWORD || 'admin123';
+
+    if (username === adminUser && password === adminPass) {
         const token = jwt.sign({ username }, SECRET_KEY, { expiresIn: '1h' });
         return res.json({ success: true, token });
     }
@@ -174,8 +186,8 @@ const initEmailService = async () => {
         transporter = nodemailer.createTransport({
             service: 'gmail',
             auth: {
-                user: 'poojaselvaraj019@gmail.com',
-                pass: 'ngls yoai luqa pxgd',
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS,
             },
             logger: true,
             tls: {
@@ -200,7 +212,7 @@ const sendOrderConfirmation = async (order) => {
         ).join('');
 
         const info = await transporter.sendMail({
-            from: '"BestBites" <poojaselvaraj019@gmail.com>',
+            from: `"BestBites" <${process.env.EMAIL_USER}>`,
             to: order.email,
             subject: `Order Confirmation - #${order.id.toString().slice(-6)}`,
             html: `

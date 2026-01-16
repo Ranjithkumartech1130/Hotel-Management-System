@@ -1,5 +1,5 @@
 $(document).ready(function () {
-    const API_URL = 'http://localhost:5000/api';
+    const API_URL = window.location.origin.includes('localhost') ? 'http://localhost:5000/api' : window.location.origin + '/api';
 
     let cart = [];
     let totalCost = 0;

@@ -4,98 +4,96 @@ A comprehensive Hotel and Food Management System with real-time table booking, f
 
 ## 🚀 Features
 
--   **Stunning UI/UX**: Premium design with smooth animations and responsive layout.
--   **Table Management**: Real-time table status tracking (Available/Occupied).
--   **Food Menu**: Wide variety of food items with category filtering (Burger, Pizza, Sweets, etc.).
--   **Shopping Cart**: Dynamic cart management using local storage.
--   **Checkout System**: Secure billing and order placement.
--   **Email Confirmations**: Automated order confirmation emails to customers.
+-   **Stunning UI/UX**: Premium design with glassmorphism, smooth animations, and responsive layout.
+-   **Table Management**: Real-time table status tracking (Available/Occupied) with visual map.
+-   **Food Menu**: Wide variety of food items with category filtering and "Today's Special" highlights.
+-   **Shopping Cart**: Dynamic cart management with local storage persistence.
+-   **Email Confirmations**: Automated order confirmation emails sent via Nodemailer.
 -   **Admin Dashboard**:
-    -   Secure JWT-based Login.
-    -   Real-time order tracking and management.
-    -   Table status control.
-    -   Menu item availability toggle.
+    -   Secure JWT-based Login (configured via environment variables).
+    -   Real-time order management and deletion.
+    -   Table status toggling and Menu availability control.
     -   CSV Export of orders for business analysis.
 
 ---
 
 ## 🛠️ Technical Stack
 
--   **Frontend**: HTML5, Vanilla CSS, JavaScript (jQuery), Bootstrap 5, Flaticon.
--   **Backend**: Node.js, Express.js.
+-   **Frontend**: HTML5, CSS3 (Custom Glassmorphism), JavaScript (jQuery), Bootstrap 5.
+-   **Backend**: Node.js, Express.js, `dotenv` for configuration.
 -   **Authentication**: JSON Web Tokens (JWT).
--   **Data Storage**: JSON File-based storage (`orders.json`).
--   **Export Utility**: `json2csv` for order reporting.
+-   **Email**: Nodemailer (Gmail SMTP).
+-   **Data**: JSON-based persistent storage.
 
 ---
 
-## 📦 Prerequisites
+## 🏃 Local Development
 
-Ensure you have [Node.js](https://nodejs.org/) installed on your machine.
+### 1. Prerequisites
+- [Node.js](https://nodejs.org/) installed.
 
----
-
-## 🏃 How to Run
-
-### 1. Start the Backend Server
-1. Open your terminal or command prompt.
-2. Navigate to the backend directory:
-   ```bash
-   cd backend
+### 2. Setup Backend
+1. Go to backend folder: `cd backend`
+2. Install dependencies: `npm install`
+3. Create a `.env` file in the `backend` folder:
+   ```env
+   PORT=5000
+   JWT_SECRET=your_secret_key
+   ADMIN_USERNAME=pooja
+   ADMIN_PASSWORD=pooja123
+   EMAIL_USER=your_gmail@gmail.com
+   EMAIL_PASS=your_app_password
    ```
-3. Install dependencies:
-   ```bash
-   npm install
-   ```
-4. Start the server:
-   ```bash
-   node server.js
-   ```
-   *The server will run on `http://localhost:5000`*
+4. Start the server: `node server.js`
 
-### 2. Launch the Frontend
-1. Simply open the `frontend/index.html` file in any modern web browser.
-2. Ensure the backend server is running in the background for the ordering system to work.
+### 3. Launch Frontend
+Open `frontend/index.html` in your browser or visit `http://localhost:5000` (since the backend now serves the frontend).
 
 ---
 
-## 🔐 Admin Access
+## ☁️ Render Deployment Guide
 
-To access the Admin Dashboard:
-1. Click the **User-Lock icon** in the navbar.
-2. **Username**: `admin`
-3. **Password**: `admin123`
+Follow these steps to deploy this system to [Render](https://render.com/):
 
----
+### 1. Create a Web Service
+- Connect your GitHub repository.
+- **Root Directory**: `backend` (or leave empty if your repo root is the project root, but set the Build Command accordingly).
+- **Environment**: `Node`
+- **Build Command**: `npm install`
+- **Start Command**: `node server.js`
 
-## 📄 API Endpoints
+### 2. Configure Environment Variables
+In the Render Dashboard, go to **Environment** and add the following keys:
+- `JWT_SECRET`: A long random string.
+- `ADMIN_USERNAME`: Your preferred admin username (e.g., `pooja`).
+- `ADMIN_PASSWORD`: Your preferred admin password (e.g., `pooja123`).
+- `EMAIL_USER`: Your Gmail address.
+- `EMAIL_PASS`: Your Google App Password.
+- `PORT`: `10000` (Render's default).
 
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| POST | `/api/orders` | Place a new order |
-| POST | `/api/admin/login` | Admin authentication |
-| GET | `/api/admin/orders` | Fetch all orders (Auth required) |
-| GET | `/api/admin/export` | Download orders as CSV (Auth required) |
+### 3. Frontend Sync
+The app is configured to automatically detect if it's running on Render and will use the correct URL for API calls. No manual code changes are needed in the HTML files.
 
 ---
 
 ## 📂 Project Structure
 
 ```text
-BestBites-main/
+Hotel-Management-System/
 ├── frontend/          # Web interface files
 │   ├── assets/       # Images and icons
 │   ├── index.html    # Home page
 │   ├── admin.html    # Admin Dashboard
 │   ├── checkout.html # Checkout page
 │   ├── script.js     # Frontend logic
-│   └── style.css     # Custom styling
+│   └── style.css     # Premium styling
 └── backend/           # Node.js server files
-    ├── server.js     # Main entry point
+    ├── server.js     # Main entry point (serves API & Frontend)
+    ├── .env          # Secrets (local only)
     ├── orders.json   # Local Database
     └── package.json  # Dependencies
 ```
 
 ---
 
-© 2026 BestBites. Built for Food Lovers.
+© 2026 Hotel Management System. Built for Excellence.
