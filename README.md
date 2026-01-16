@@ -63,16 +63,19 @@ Follow these steps to deploy this system to [Render](https://render.com/):
 - **Start Command**: `node server.js`
 
 ### 2. Configure Environment Variables
-In the Render Dashboard, go to **Environment** and add the following keys:
-- `JWT_SECRET`: A long random string.
-- `ADMIN_USERNAME`: Your preferred admin username (e.g., `pooja`).
-- `ADMIN_PASSWORD`: Your preferred admin password (e.g., `pooja123`).
-- `EMAIL_USER`: Your Gmail address.
-- `EMAIL_PASS`: Your Google App Password.
-- `PORT`: `10000` (Render's default).
+**CRITICAL**: Since `.env` is gitignored, you **MUST** manually add these variables in the Render Dashboard (**Environment** tab):
+
+| Key | Description |
+| :--- | :--- |
+| `JWT_SECRET` | A secret string for authentication |
+| `ADMIN_USERNAME` | `pooja` (or your choice) |
+| `ADMIN_PASSWORD` | `pooja123` (or your choice) |
+| `EMAIL_USER` | `poojaselvaraj019@gmail.com` |
+| `EMAIL_PASS` | Your 16-character Google App Password |
+| `PORT` | `10000` (Render's default) |
 
 ### 3. Frontend Sync
-The app is configured to automatically detect if it's running on Render and will use the correct URL for API calls. No manual code changes are needed in the HTML files.
+The app automatically detects the Render environment and connects to the correct API URL.
 
 ---
 
@@ -81,17 +84,11 @@ The app is configured to automatically detect if it's running on Render and will
 ```text
 Hotel-Management-System/
 ├── frontend/          # Web interface files
-│   ├── assets/       # Images and icons
-│   ├── index.html    # Home page
-│   ├── admin.html    # Admin Dashboard
-│   ├── checkout.html # Checkout page
-│   ├── script.js     # Frontend logic
-│   └── style.css     # Premium styling
 └── backend/           # Node.js server files
-    ├── server.js     # Main entry point (serves API & Frontend)
-    ├── .env          # Secrets (local only)
-    ├── orders.json   # Local Database
-    └── package.json  # Dependencies
+    ├── server.js      # API & Static file server
+    ├── .env           # (Local only - Git Ignored)
+    ├── orders.json    # Persistent data
+    └── package.json   # Dependencies
 ```
 
 ---

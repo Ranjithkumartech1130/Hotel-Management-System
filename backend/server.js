@@ -184,7 +184,9 @@ let transporter;
 const initEmailService = async () => {
     try {
         transporter = nodemailer.createTransport({
-            service: 'gmail',
+            host: 'smtp.gmail.com',
+            port: 465,
+            secure: true,
             auth: {
                 user: process.env.EMAIL_USER,
                 pass: process.env.EMAIL_PASS,
@@ -196,7 +198,7 @@ const initEmailService = async () => {
         });
 
         await transporter.verify();
-        console.log('✅ Email Service Connected (smtp.gmail.com:587)');
+        console.log('✅ Email Service Connected (smtp.gmail.com:465)');
     } catch (error) {
         console.error('Failed to initialize email service:', error);
     }
