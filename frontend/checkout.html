@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - The Hungry Spot</title>
+    <link rel="icon" type="image/x-icon" href="logo.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/uicons-regular-rounded/css/uicons-regular-rounded.css'>
+    <style>
+        .table-map {
+            position: relative;
+            width: 100%;
+            height: 480px;
+            background-color: #f8f9fa;
+            border: 2px solid #dee2e6;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .table-item {
+            position: absolute;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #333;
+            font-size: 0.8rem;
+            z-index: 10;
+        }
+
+        .table-item:hover {
+            transform: scale(1.1);
+            z-index: 20;
+        }
+
+        .table-rect {
+            width: 50px;
+            height: 50px;
+            background-color: #fff;
+            border: 2px solid #6c757d;
+            border-radius: 4px;
+        }
+
+        .table-diamond {
+            width: 50px;
+            height: 50px;
+            background-color: #fff;
+            border: 2px solid #6c757d;
+            transform: rotate(45deg);
+            border-radius: 4px;
+        }
+
+        .table-diamond span {
+            transform: rotate(-45deg);
+        }
+
+        .table-round {
+            width: 50px;
+            height: 50px;
+            background-color: #fff;
+            border: 2px solid #6c757d;
+            border-radius: 50%;
+        }
+
+        .table-occupied {
+            background-color: #dc3545 !important;
+            border-color: #dc3545 !important;
+            color: white !important;
+            cursor: not-allowed;
+        }
+
+        .table-available {
+            background-color: #d1e7dd;
+            border-color: #198754;
+        }
+
+        .table-selected {
+            background-color: #ffc107 !important;
+            border-color: #ffca2c !important;
+            transform: scale(1.15);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .table-rect::before,
+        .table-rect::after,
+        .table-diamond::before,
+        .table-diamond::after,
+        .table-round::before,
+        .table-round::after {
+            content: '';
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            background-color: #adb5bd;
+            border-radius: 50%;
+            z-index: -1;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar  -->
+    <header class="sticky-top">
+        <nav class="navbar bg-body-tertiary navbar-expand-lg  w-100">
+            <div class="container">
+                <a class="navbar-brand d-flex gap-2 align-items-center" href="index.html">
+                    <img alt="Free Frontend Logo" class="img-fluid" height="50" src="logo.png" width="50">
+                    <h2 class="m-0 text-warning">The Hungry</h2>
+                    <h2 class="m-0">Spot</h2>
+                </a>
+                <button aria-controls="navbarSupportedContent4" aria-expanded="false" aria-label="Toggle navigation"
+                    class="navbar-toggler" data-bs-target="#navbarSupportedContent4" data-bs-toggle="collapse"
+                    type="button"><span class="navbar-toggler-icon"></span></button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent4">
+                    <ul class="navbar-nav ms-auto my-2 my-lg-0">
+                        <li class="nav-item ms-lg-4">
+                            <a class="nav-link" href="index.html">Home</a>
+                        </li>
+                        <li class="nav-item ms-lg-4">
+                            <a class="nav-link" href="#about">About</a>
+                        </li>
+                        <li class="nav-item ms-lg-4">
+                            <a class="nav-link" href="#menu">Menu</a>
+                        </li>
+                        <li class="nav-item ms-lg-4">
+                            <a class="nav-link active" href="checkout.html">Order</a>
+                        </li>
+                        <li class="nav-item ms-lg-4">
+                            <a class="nav-link d-flex align-items-center gap-2" href="admin.html" title="Admin Login">
+                                <i class="bi bi-shield-lock fs-5"></i> Admin
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <!-- navbar end  -->
+
+    <main class="container pb-4">
+        <div class="py-5 text-center">
+            <h1>Checkout form</h1>
+        </div>
+
+        <div class="row g-5">
+            <div class="col-md-5 col-lg-4 order-md-last">
+                <h4 class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-warning">Your cart</span>
+                    <span class="badge bg-warning rounded-pill">3</span>
+                </h4>
+                <ul class="cart-items list-group mb-3">
+                </ul>
+
+                <form class="card p-2">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Promo code">
+                        <button type="submit" class="btn btn-secondary">Redeem</button>
+                    </div>
+                </form>
+                <p class="my-3">Total Price: <span class="total-price fw-bold text-warning"></span> </p>
+            </div>
+
+            <div class="col-md-7 col-lg-8">
+                <!-- Order Type Toggle -->
+                <div class="btn-group w-100 mb-4" role="group">
+                    <input type="radio" class="btn-check" name="orderType" id="typeDelivery" autocomplete="off" checked>
+                    <label class="btn btn-outline-warning" for="typeDelivery"><i class="bi bi-truck"></i>
+                        Delivery</label>
+
+                    <input type="radio" class="btn-check" name="orderType" id="typeDineIn" autocomplete="off">
+                    <label class="btn btn-outline-warning" for="typeDineIn"><i class="bi bi-shop"></i> Dine In (Book
+                        Table)</label>
+                </div>
+
+                <h4 class="mb-3" id="detailsHeader">Delivery Details</h4>
+                <form class="needs-validation" novalidate id="checkoutForm">
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <label for="firstName" class="form-label">First name</label>
+                            <input type="text" class="form-control" id="firstName" required>
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="lastName" class="form-label">Last name</label>
+                            <input type="text" class="form-control" id="lastName" required>
+                        </div>
+                        <div class="col-12">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" placeholder="you@example.com">
+                        </div>
+
+                        <!-- Delivery Address Fields -->
+                        <div id="deliveryFields" class="col-12">
+                            <div class="col-12 mb-3">
+                                <label for="address" class="form-label">Address</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="address" placeholder="1234 Main St">
+                                    <button class="btn btn-outline-warning" type="button" id="getLocationBtn">
+                                        <i class="bi bi-geo-alt-fill"></i> Use Current Location
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dine In Map -->
+                        <div id="dineInFields" class="col-12" style="display: none;">
+                            <div class="col-12 text-center mb-3">
+                                <h5>Select your Table</h5>
+                                <p class="text-muted small">
+                                    <span
+                                        class="badge bg-success-subtle text-success border border-success-subtle">Available</span>
+                                    <span
+                                        class="badge bg-danger-subtle text-danger border border-danger-subtle ms-2">Occupied</span>
+                                </p>
+                            </div>
+                            <div class="table-map rounded-3 shadow-sm" id="tableMap">
+                                <!-- Tables injected by JS -->
+                                <div
+                                    class="position-absolute bottom-0 start-0 p-2 bg-light border-top border-end rounded-top-end small fw-bold">
+                                    Entrance</div>
+                                <div
+                                    class="position-absolute top-0 end-0 p-2 bg-light border-bottom border-start rounded-bottom-start small fw-bold">
+                                    Restrooms</div>
+                            </div>
+                            <input type="hidden" id="selectedTableId">
+                            <div class="mt-2 text-center">
+                                <span id="selectedTableLabel" class="fw-bold text-warning fs-5">No table selected</span>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="same-address">
+                        <label class="form-check-label" for="same-address">Shipping address is the same as my billing
+                            address</label>
+                    </div>
+
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="save-info">
+                        <label class="form-check-label" for="save-info">Save this information for next time</label>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <h4 class="mb-3">Payment</h4>
+
+                    <div class="row gy-3">
+                        <div class="col-md-6">
+                            <label for="upi" class="form-label">UPI ID</label>
+                            <input type="text" class="form-control" id="upi" placeholder="Enter UPI Id" required>
+                            <div class="invalid-feedback">
+                                Payment details required
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <button class="w-100 btn btn-warning btn-lg" type="submit">Place Order</button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer  -->
+    <footer class="py-4 border-top">
+        <div class="container">
+            <div class="d-lg-flex align-items-center justify-content-between py-3 py-lg-2">
+                <div class="small mb-2 mb-lg-0 text-muted">
+                    © 2025 The Hungry Spot|All rights reserved.
+                </div>
+                <div class="small mb-2 mb-lg-0 text-muted">
+                    <span>Designed by Pooja</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            const API_URL = 'http://localhost:5000/api';
+            let cart = [];
+            let totalCost = 0;
+            let orderType = 'delivery';
+
+            const savedCart = localStorage.getItem('cart');
+            const savedTotalCost = localStorage.getItem('totalCost');
+            if (savedTotalCost) totalCost = parseFloat(savedTotalCost);
+            if (savedCart) {
+                cart = JSON.parse(savedCart);
+                updateCart();
+            }
+
+            $('input[name="orderType"]').change(function () {
+                if ($('#typeDineIn').is(':checked')) {
+                    orderType = 'dine-in';
+                    $('#detailsHeader').text('Dine In Details');
+                    $('#deliveryFields').hide();
+                    $('#dineInFields').show();
+                    $('#address').prop('required', false);
+                    loadTables();
+                } else {
+                    orderType = 'delivery';
+                    $('#detailsHeader').text('Delivery Details');
+                    $('#deliveryFields').show();
+                    $('#dineInFields').hide();
+                    $('#address').prop('required', true);
+                    $('#selectedTableId').val('');
+                    $('#selectedTableLabel').text('No table selected');
+                }
+            });
+
+            function loadTables() {
+                $.ajax({
+                    url: `${API_URL}/tables`,
+                    method: 'GET',
+                    success: function (tables) {
+                        const $map = $('#tableMap');
+                        $map.empty();
+
+                        $map.append('<div class="position-absolute bottom-0 start-0 p-2 bg-light border-top border-end rounded-top-end small fw-bold" style="z-index: 5;">Entrance</div>');
+                        $map.append('<div class="position-absolute top-0 end-0 p-2 bg-light border-bottom border-start rounded-bottom-start small fw-bold" style="z-index: 5;">Restrooms</div>');
+
+                        tables.forEach(table => {
+                            const isOccupied = table.status === 'occupied';
+                            const className = `table-item table-${table.type} ${isOccupied ? 'table-occupied' : 'table-available'}`;
+
+                            const $el = $(`<div class="${className}" style="left:${table.x}%; top:${table.y}%;"><span>${table.label}</span></div>`);
+
+                            if (!isOccupied) {
+                                $el.click(function () {
+                                    $('.table-item').removeClass('table-selected');
+                                    $(this).addClass('table-selected');
+                                    $('#selectedTableId').val(table.id);
+                                    $('#selectedTableLabel').text(`Selected: Table ${table.label} (${table.seats} Seats)`);
+                                });
+                            }
+
+                            $map.append($el);
+                        });
+                    }
+                });
+            }
+
+            function updateCart() {
+                $('.cart-items').empty();
+                cart.forEach(function (item) {
+                    $('.cart-items').append(`
+                        <li class="list-group-item d-flex align-items-center justify-content-between lh-sm">
+                            <img src="${item.image}" width="50" class="rounded border">
+                            <div><h6 class="my-0 ms-2">${item.title}</h6></div>
+                            <span class="text-muted">₹${item.price}</span>
+                        </li>
+                    `);
+                });
+                $('.badge').text(cart.length);
+                $('.total-price').text(`₹${totalCost}`);
+            }
+
+            $('#checkoutForm').submit(function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+
+                const firstName = $('#firstName').val();
+                const lastName = $('#lastName').val();
+
+                if (!firstName || !lastName) {
+                    alert("Please fill in your name."); return;
+                }
+
+                if (orderType === 'delivery' && !$('#address').val()) {
+                    alert("Please enter a delivery address."); return;
+                }
+
+                if (orderType === 'dine-in' && !$('#selectedTableId').val()) {
+                    alert("Please select a table from the map."); return;
+                }
+
+                const orderData = {
+                    firstName: firstName,
+                    lastName: lastName,
+                    email: $('#email').val(),
+                    cart: cart,
+                    totalCost: totalCost,
+                    type: orderType,
+                    upi: $('#upi').val()
+                };
+
+                if (orderType === 'delivery') {
+                    orderData.address = $('#address').val();
+                } else {
+                    orderData.tableId = $('#selectedTableId').val();
+                    orderData.address = 'Dine In - ' + $('#selectedTableLabel').text();
+                }
+
+                const $btn = $('button[type="submit"]');
+                $btn.prop('disabled', true).text('Processing...');
+
+                $.ajax({
+                    url: `${API_URL}/orders`,
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(orderData),
+                    success: function (response) {
+                        alert('Order placed successfully!');
+                        localStorage.removeItem('cart');
+                        localStorage.removeItem('totalCost');
+                        window.location.href = 'index.html';
+                    },
+                    error: function (xhr) {
+                        alert('Error: ' + (xhr.responseJSON ? xhr.responseJSON.message : 'Unknown error'));
+                        $btn.prop('disabled', false).text('Place Order');
+                    }
+                });
+            });
+
+            $('#getLocationBtn').click(function () {
+                const $btn = $(this);
+                if (navigator.geolocation) {
+                    $btn.html('<span class="spinner-border spinner-border-sm"></span> Locating...').prop('disabled', true);
+                    navigator.geolocation.getCurrentPosition(function (position) {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        $.ajax({
+                            url: `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`,
+                            method: 'GET',
+                            headers: { 'User-Agent': 'BestBites/1.0' },
+                            success: function (data) {
+                                $('#address').val(data.display_name || `${lat}, ${lon}`);
+                                $btn.html('<i class="bi bi-check-lg"></i> Found').addClass('btn-success').removeClass('btn-outline-warning');
+                            },
+                            error: function () {
+                                $('#address').val(`${lat}, ${lon}`);
+                                $btn.html('<i class="bi bi-check-lg"></i> Found').addClass('btn-success').removeClass('btn-outline-warning');
+                            }
+                        });
+                    }, function () { alert("Could not get location."); $btn.prop('disabled', false).text('Use Current Location'); });
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
